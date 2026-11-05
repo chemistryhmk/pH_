@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Загадка зсуву рівноваги: Задачі-Пастки</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #171512;
+      background-image: radial-gradient(#302820 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: #e5dfd5;
+    }
+    
+    .font-detective {
+      font-family: 'Courier Prime', monospace;
+    }
+
+    .font-stamp {
+      font-family: 'Special Elite', cursive;
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #241e18;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #524233;
+      border-radius: 4px;
+    }
+
+    .option-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .option-card:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Animated Balance Scale */
+    @keyframes tilt-left {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(-8deg); }
+    }
+    @keyframes tilt-right {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(8deg); }
+    }
+    .anim-scale-left {
+      animation: tilt-left 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    .anim-scale-right {
+      animation: tilt-right 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* Water filling animation inside reaction beaker */
+    @keyframes fill-liquid {
+      0% { height: 20%; opacity: 0.5; }
+      100% { height: 85%; opacity: 1; }
+    }
+    .anim-fill {
+      animation: fill-liquid 1.2s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 md:p-6 select-none">
+
+  <!-- HEADER BAR -->
+  <header class="max-w-6xl w-full mx-auto mb-4 bg-amber-950/40 border-2 border-amber-800/50 rounded-xl p-4 backdrop-blur-md shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="flex items-center gap-3">
+      <div class="p-3 bg-amber-900/60 border border-amber-700/60 rounded-lg text-amber-400">
+        <i class="fa-solid fa-scale-unbalanced text-3xl"></i>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-amber-500/80 font-semibold">Справа № 9 • Експериментальна Лабораторія</div>
+        <h1 class="text-xl md:text-2xl font-bold font-detective text-amber-100 flex items-center gap-2">
+          Загадка зсуву рівноваги: Задачі-Пастки
+        </h1>
+      </div>
+    </div>
+
+    <!-- Counters -->
+    <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+      <div class="bg-black/50 border border-amber-900/40 px-4 py-2 rounded-lg flex items-center gap-3">
+        <i class="fa-solid fa-flask-vial text-amber-500"></i>
+        <div>
+          <div class="text-[10px] uppercase text-stone-400">Справа Пастка</div>
+          <div class="text-lg font-bold font-detective text-amber-200" id="progress-indicator">1 / 5</div>
+        </div>
+      </div>
+
+      <div class="bg-black/50 border border-amber-900/40 px-4 py-2 rounded-lg flex items-center gap-3">
+        <i class="fa-solid fa-brain text-amber-500"></i>
+        <div>
+          <div class="text-[10px] uppercase text-stone-400">Очки Логіки</div>
+          <div class="text-lg font-bold font-detective text-emerald-400" id="score-indicator">0</div>
+        </div>
+      </div>
+
+      <button id="btn-restart" title="Перезапустити розслідування" class="p-3 bg-stone-800 hover:bg-amber-900 text-stone-300 hover:text-amber-200 border border-stone-700 rounded-lg transition-colors">
+        <i class="fa-solid fa-rotate-right"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-6xl w-full mx-auto flex-grow flex flex-col gap-6">
+
+    <!-- ACTIVE TRAP CASE CARD -->
+    <section id="trap-card" class="bg-stone-900/90 border-2 border-amber-800/60 rounded-2xl p-6 shadow-2xl flex-grow flex flex-col justify-between relative overflow-hidden">
+      
+      <!-- Top Header -->
+      <div class="flex justify-between items-start border-b border-stone-800 pb-4 mb-4">
+        <div>
+          <span class="text-xs uppercase font-semibold text-amber-500 tracking-widest font-detective" id="trap-category">
+            СЛІДЧА ПАСТКА №1: МЕЖІ РОЗБАВЛЕННЯ КИСЛОТИ
+          </span>
+          <h2 class="text-xl md:text-2xl font-bold text-amber-100 font-detective mt-1" id="trap-title">
+            Справа 1: Ніскінченне розбавлення кислоти
+          </h2>
+        </div>
+        <span class="text-xs font-mono font-bold px-3 py-1 bg-amber-950 text-amber-300 border border-amber-800 rounded-full" id="trap-tag">
+          Пастка #1/5
+        </span>
+      </div>
+
+      <!-- INSTRUCTION BANNER FOR STUDENTS -->
+      <div class="p-3 bg-amber-950/40 border border-amber-700/50 rounded-xl mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-amber-900/60 rounded-lg text-amber-400">
+            <i class="fa-solid fa-brain text-xl animate-bounce"></i>
+          </div>
+          <div>
+            <div class="text-[10px] uppercase font-bold text-amber-400">Інструкція для ученка (9 клас)</div>
+            <div class="text-xs text-amber-100" id="step-instruction">
+              Крок 1: Прочитайте детективну ситуацію та оберіть ваш вердикт нижче. Потім проведіть лабораторний дослід для перевірки!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem Statement & Visual Beaker Experiment -->
+      <div class="my-auto space-y-4">
+        
+        <div class="p-4 bg-stone-950/80 border border-stone-800 rounded-xl text-stone-300 text-sm md:text-base leading-relaxed" id="trap-description">
+          <!-- Problem text injected via JS -->
+        </div>
+
+        <!-- REACTION VISUALIZATION BENCH -->
+        <div class="bg-stone-950 p-4 rounded-xl border border-amber-900/40 flex flex-col md:flex-row items-center justify-around gap-6 relative min-h-[200px]">
+          
+          <!-- Chemical Beaker Visual -->
+          <div class="flex items-center gap-4 z-10">
+            <div class="relative w-28 h-36 bg-stone-900/90 border-2 border-stone-500/70 rounded-b-3xl overflow-hidden flex items-end justify-center shadow-2xl">
+              
+              <!-- Liquid Body inside Beaker -->
+              <div id="beaker-liquid" class="w-full h-1/2 bg-red-600/40 transition-all duration-1000 relative flex items-center justify-center">
+                <div class="absolute inset-x-0 top-0 h-1.5 bg-white/40 animate-pulse"></div>
+                <div id="liquid-label" class="font-mono text-xs font-bold text-stone-200 bg-black/70 px-2 py-0.5 rounded shadow">
+                  ? (Приховано)
+                </div>
+              </div>
+
+              <!-- Graduations -->
+              <div class="absolute left-1 top-8 bottom-3 flex flex-col justify-between text-[9px] font-mono text-stone-500">
+                <span>500ml</span>
+                <span>250ml</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-xs uppercase text-amber-500 font-bold font-detective">Контрольний стакан</div>
+              <div id="system-status-title" class="font-bold text-amber-100 text-base">Очікує висунення вердикту</div>
+              <div id="system-status-desc" class="text-xs text-stone-400 italic mt-1 max-w-[220px]">
+                Оберіть відповідь нижче, щоб провести експеримент!
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Action & Balance Scale Bench -->
+          <div class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-stone-800 rounded-xl min-w-[260px] bg-stone-900/50 z-10">
+            
+            <div id="scale-icon" class="text-amber-500 text-4xl mb-2 transition-transform duration-700">
+              <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+
+            <div id="ion-ratio-text" class="text-xs font-mono text-amber-300 text-center font-bold">
+              [Йонний баланс приховано]
+            </div>
+
+            <!-- STEP 2: RUN EXPERIMENT CHECK BUTTON -->
+            <button id="btn-run-sim" disabled onclick="app.runExperimentVisual()" class="mt-3 px-5 py-2.5 bg-stone-800 text-stone-500 font-bold font-detective text-xs rounded-xl transition-all flex items-center gap-2 cursor-not-allowed">
+              <i class="fa-solid fa-flask"></i>
+              <span>Перевірити дослід в стакані</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- STEP 1: ANSWER OPTIONS GRID (Active immediately for student selection!) -->
+    <div id="options-section" class="mt-6 pt-4 border-t border-stone-800 opacity-100 pointer-events-auto transition-all duration-500">
+      <div class="text-xs font-detective text-amber-400 font-bold mb-2 uppercase">
+        Крок 1: Виведіть ваш гіпотетичний вердикт:
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="options-container">
+        <!-- Dynamic Option Buttons -->
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+  <!-- VERDICT / EXPLANATION MODAL -->
+  <div id="verdict-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-stone-900 border-2 border-amber-800/80 max-w-2xl w-full rounded-2xl shadow-2xl p-6 relative my-8">
+      
+      <!-- Result Stamp Badge -->
+      <div class="flex justify-between items-start mb-4 border-b border-stone-800 pb-3">
+        <div>
+          <span class="text-xs uppercase font-semibold text-amber-500 tracking-widest font-detective">Аналіз Фізико-Хімічних Доказів</span>
+          <h3 class="text-xl font-bold font-detective text-amber-100" id="modal-title">ВЕРДИКТ СЛІДСТВА</h3>
+        </div>
+        <div id="modal-stamp" class="font-stamp text-lg px-3 py-1 border-2 rounded tracking-wider uppercase">
+          ВЕРДИКТ
+        </div>
+      </div>
+
+      <!-- Explanation Text -->
+      <div class="p-4 bg-stone-950 rounded-xl border border-stone-800 text-sm text-stone-300 leading-relaxed mb-6 space-y-3" id="modal-body">
+        <!-- Explanation content -->
+      </div>
+
+      <!-- Action Button -->
+      <div class="flex justify-end">
+        <button id="btn-next" class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-black font-extrabold font-detective rounded-xl transition-all flex items-center gap-2">
+          <span>НАСТУПНА ПАСТКА</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SUMMARY REPORT MODAL -->
+  <div id="summary-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-stone-900 border-2 border-amber-800/80 max-w-3xl w-full rounded-2xl shadow-2xl p-6 relative my-8">
+      
+      <div class="text-center border-b border-stone-800 pb-4 mb-6">
+        <div class="p-3 bg-amber-900/40 w-16 h-16 rounded-full border border-amber-600 flex items-center justify-center text-amber-400 mx-auto mb-3">
+          <i class="fa-solid fa-graduation-cap text-3xl"></i>
+        </div>
+        <span class="text-xs uppercase font-semibold text-amber-500 tracking-widest font-detective">Атестаційний протокол знань</span>
+        <h2 class="text-2xl font-bold font-detective text-amber-100">УСІ ПАСТКИ РОЗКРИТО!</h2>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="grid grid-cols-2 gap-4 mb-6 bg-stone-950 p-4 rounded-xl border border-stone-800 text-center">
+        <div>
+          <div class="text-xs text-stone-400 uppercase">Очки Логіки</div>
+          <div id="summary-score" class="text-3xl font-bold font-detective text-emerald-400">0 / 5</div>
+        </div>
+        <div>
+          <div class="text-xs text-stone-400 uppercase">Кваліфікаційний Звання</div>
+          <div id="summary-rank" class="text-xl font-bold font-detective text-amber-400 mt-1">ЕКСПЕРТ-ТЕОРЕТИК</div>
+        </div>
+      </div>
+
+      <div class="space-y-3 max-h-60 overflow-y-auto pr-2 mb-6" id="summary-list">
+        <!-- Breakdown list -->
+      </div>
+
+      <div class="flex justify-center border-t border-stone-800 pt-4">
+        <button onclick="location.reload()" class="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-black font-extrabold font-detective rounded-xl transition-all">
+          <i class="fa-solid fa-rotate-right mr-2"></i> ПРОЙТИ ТЕСТ ЗНОВУ
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // 5 ADAPTED 9TH GRADE TRAPS (CLEAN READABLE HTML/TEXT, NO MATHJAX/LATEX SYMBOLS)
+    const TRAP_SCENARIOS = [
+      {
+        id: 1,
+        category: "СЛІДЧА ПАСТКА №1: МЕЖІ РОЗБАВЛЕННЯ КИСЛОТИ",
+        title: "Справа 1: Ніскінченне розбавлення кислоти",
+        description: "Молодший оперативник виявив розчин оцтової кислоти з <b>pH = 5.0</b>. Він стверджує: <i>«Якщо додати до нього величезну кількість чистої води (розбавити у 10 000 разів), катіонів H⁺ стане так мало, що розчин стане лужним з pH = 9.0!»</i>. Чи правильне це припущення?",
+        initialPH: "pH = 5.0",
+        simPH: "pH → 6.99",
+        simStatus: "Додано 10 000 л води! Розчин наближається до чистої дистильованої води.",
+        initialIonRatio: "[H⁺] > [OH⁻]",
+        simIonRatio: "[H⁺] ≈ [OH⁻] (Межа чистої H₂O)",
+        initialLiquidColor: "bg-red-600/40",
+        simLiquidColor: "bg-emerald-600/30",
+        options: [
+          { text: "А. Так, оперативник правий. При такому розбавленні pH стане 9.0 (лужне середовище).", isCorrect: false },
+          { text: "Б. Ні, pH зменшиться до 1.0, тому що кислота стане концентрованою.", isCorrect: false },
+          { text: "В. Ні! Додавання води наближає pH до 7.0 (чиста вода), але НІКОЛИ не зробить кислоту лугом.", isCorrect: true }
+        ],
+        explanation: "<b>Розкриття пастки (програма 9 класу):</b><br>Додавання чистої дистильованої води (pH = 7.0) зменшує концентрацію катіонів Гідрогену H⁺. Проте сама вода також містить катіони H⁺ у кількості 0.0000001 моль/л (10⁻⁷ моль/л). Тому при розбавленні кислоти її pH прагне до <b>7.0 (нейтрального середовища)</b>, але ніколи не зможе перевищити його і перетворитися на луг (pH > 7)!"
+      },
+      {
+        id: 2,
+        category: "СЛІДЧА ПАСТКА №2: КІЛЬКІСТЬ ЙОНІВ H⁺ У КИСЛОТАХ",
+        title: "Справа 2: Змішування двох кислих розчинів",
+        description: "У лабораторії змішали 1 літр сильнокислого розчину <b>pH = 2.0</b> (0.01 моль/л H⁺) та 1 літр слабокислого розчину <b>pH = 4.0</b> (0.0001 моль/л H⁺). Асистент обчислив середнє арифметичне: <i>(2 + 4) / 2 = 3</i> і стверджує, що <b>pH суміші дорівнює 3.0</b>. Яке значення покаже прилад?",
+        initialPH: "pH 2 + pH 4",
+        simPH: "pH ≈ 2.3",
+        simStatus: "Змішано розчини. Основну кількість йонів H⁺ дала сильніша кислота!",
+        initialIonRatio: "0.01 моль vs 0.0001 моль",
+        simIonRatio: "[H⁺] = 0.00505 моль/л",
+        initialLiquidColor: "bg-red-700/60",
+        simLiquidColor: "bg-red-600/70",
+        options: [
+          { text: "А. pH = 3.0 (Середнє арифметичне значення між 2 і 4).", isCorrect: false },
+          { text: "Б. pH ≈ 2.3 (Ближче до 2.0, бо сильна кислота містить у 100 разів більше йонів H⁺).", isCorrect: true },
+          { text: "В. pH = 6.0 (Концентрації взаємно нейтралізують одна одну).", isCorrect: false }
+        ],
+        explanation: "<b>Розкриття пастки (без вищої математики):</b><br>Розчин з pH = 2 містить <b>0.01 моль/л</b> йонів H⁺, а розчин з pH = 4 містить лише <b>0.0001 моль/л</b> (тобто у 100 разів менше!).<br>При змішуванні сильніший розчин віддає майже всі йони H⁺. Загальна концентрація залишається дуже високою (приблизно 0.005 моль/л), що відповідає <b>pH ≈ 2.3</b>. Середнє арифметичне тут не працює!"
+      },
+      {
+        id: 3,
+        category: "СЛІДЧА ПАСТКА №3: САМОДИСОЦІАЦІЯ ГАРЯЧОЇ ВОДИ",
+        title: "Справа 3: Зсув рівноваги у гарячій воді",
+        description: "Чисту дистильовану воду нагріли до 60 °C. Електронний прилад показав, що її <b>pH впав до 6.5</b>. Лаборант закричав: <i>«Обережно, при нагріванні чиста вода стала кислою!»</i>. Чи правильний цей висновок?",
+        initialPH: "pH = 7.0 (25 °C)",
+        simPH: "pH = 6.5 (60 °C)",
+        simStatus: "Воду нагріто. Йони H⁺ та OH⁻ утворилися в однакових кількостях!",
+        initialIonRatio: "[H⁺] = [OH⁻]",
+        simIonRatio: "[H⁺] = [OH⁻] (Рівновага!)",
+        initialLiquidColor: "bg-emerald-600/30",
+        simLiquidColor: "bg-amber-500/40",
+        options: [
+          { text: "А. Лаборант правий! Значення pH < 7 за визначенням означає кислоту.", isCorrect: false },
+          { text: "Б. Вода стала лужною, бо з неї випарувалися гази.", isCorrect: false },
+          { text: "В. Лаборант помиляється! Вода залишається НЕДОТОРКАНО НЕЙТРАЛЬНОЮ, бо [H⁺] дорівнює [OH⁻].", isCorrect: true }
+        ],
+        explanation: "<b>Розкриття пастки:</b><br>При нагріванні води H₂O ⇌ H⁺ + OH⁻ її молекули розпадаються активніше, утворюючи катіони H⁺ та аніони OH⁻ <b>в абсолютно однаковій кількості</b>! Оскільки [H⁺] = [OH⁻], середовище залишається <b>абсолютно нейтральним</b>, хоча сама точка нейтральності при 60 °C чисельно змістилася до pH = 6.5."
+      },
+      {
+        id: 4,
+        category: "СЛІДЧА ПАСТКА №4: СОЛІ БЕЗ ГІДРОЛІЗУ",
+        title: "Справа 4: Додавання кухонної солі до води",
+        description: "До 1 літра чистої води (<b>pH = 7.0</b>) додали 50 грамів сухої кухонної солі (<b>NaCl</b>) і розчинили її. Оперативник вважає: <i>«Розчин містить аніони Хлору Cl⁻, які зреагують із катіонами H⁺, тому pH зміниться!»</i>. Що станеться з pH?",
+        initialPH: "Вода + NaCl",
+        simPH: "pH = 7.0 (Стало)",
+        simStatus: "Сіль розчинилася. Йони Na⁺ та Cl⁻ не змінюють баланс H⁺ та OH⁻!",
+        initialIonRatio: "Na⁺ + Cl⁻ у H₂O",
+        simIonRatio: "[H⁺] = [OH⁻] = 1·10⁻⁷",
+        initialLiquidColor: "bg-blue-500/20",
+        simLiquidColor: "bg-emerald-500/30",
+        options: [
+          { text: "А. Показник pH не зміниться і залишиться суворо 7.0 (Нейтральне середовище).", isCorrect: true },
+          { text: "Б. Розчин стане лужним (pH = 10.0) через наявність солей Натрію.", isCorrect: false },
+          { text: "В. Розчин стане кислим (pH = 3.0) через наявність хлорид-йонів.", isCorrect: false }
+        ],
+        explanation: "<b>Розкриття пастки (9 клас):</b><br>Кухонна сіль NaCl утворена сильною основою (NaOH) та сильною кислотою (HCl). Такі солі не піддаються гідролізу у водному розчині. Йони Na⁺ та Cl⁻ не реагують з водою і не порушують рівновагу між H⁺ та OH⁻. Розчин зберігає <b>суворо нейтральне середовище (pH = 7.0)</b>."
+      },
+      {
+        id: 5,
+        category: "СЛІДЧА ПАСТКА №5: ДИСОЦІАЦІЯ СЛАБКИХ ЕЛЕКТРОЛІТІВ",
+        title: "Справа 5: Розбавлення слабкої кислоти",
+        description: "У стакані є розчин слабкої оцтової кислоти <b>CH₃COOH</b>. Слідчий доливає туди дистильовану воду. При розбавленні <b>більший відсоток молекул кислоти розпадається на йони</b> (дисоціація зростає). Чи збільшиться від цього підсумкова концентрація йонів H⁺ у стакані?",
+        initialPH: "CH₃COOH (р-н)",
+        simPH: "pH зростає (2.8 → 4.5)",
+        simStatus: "Молекул розпалося більше, але об'єм води виріс ще сильніше! Концентрація [H⁺] спала.",
+        initialIonRatio: "Мало йонів H⁺",
+        simIonRatio: "Розбавлений розчин",
+        initialLiquidColor: "bg-amber-600/40",
+        simLiquidColor: "bg-yellow-500/30",
+        options: [
+          { text: "А. Так, оскільки розпалося більше молекул, концентрація H⁺ у розчині зросте.", isCorrect: false },
+          { text: "Б. Ні! Хоч розпався більший відсоток молекул, об'єм води зростав швидше, тому концентрація H⁺ спала.", isCorrect: true },
+          { text: "В. Концентрація H⁺ взагалі не зміниться, бо це слабкий електроліт.", isCorrect: false }
+        ],
+        explanation: "<b>Розкриття пастки:</b><br>При доливанні води молекулам слабкої кислоти легше розпадатися на йони. Проте додавання води збільшує загальний об'єм розчину набагато сильніше, ніж з'являються нові йони H⁺. У підсумку <b>концентрація йонів Гідрогену зменшується</b>, а pH розчину зростає в бік 7.0."
+      }
+    ];
+
+    class EquilibriumTrapsApp {
+      constructor() {
+        this.currentIndex = 0;
+        this.score = 0;
+        this.userHypothesis = null;
+        this.isExperimentRun = false;
+        this.userHistory = [];
+
+        this.initDOM();
+        this.initEvents();
+        this.loadTrap(0);
+      }
+
+      initDOM() {
+        this.progressIndicator = document.getElementById('progress-indicator');
+        this.scoreIndicator = document.getElementById('score-indicator');
+        this.btnRestart = document.getElementById('btn-restart');
+        
+        this.trapCategory = document.getElementById('trap-category');
+        this.trapTitle = document.getElementById('trap-title');
+        this.trapTag = document.getElementById('trap-tag');
+        this.trapDescription = document.getElementById('trap-description');
+        
+        this.beakerLiquid = document.getElementById('beaker-liquid');
+        this.liquidLabel = document.getElementById('liquid-label');
+        this.systemStatusTitle = document.getElementById('system-status-title');
+        this.systemStatusDesc = document.getElementById('system-status-desc');
+        this.scaleIcon = document.getElementById('scale-icon');
+        this.ionRatioText = document.getElementById('ion-ratio-text');
+        this.btnRunSim = document.getElementById('btn-run-sim');
+
+        this.optionsContainer = document.getElementById('options-container');
+
+        this.verdictModal = document.getElementById('verdict-modal');
+        this.modalTitle = document.getElementById('modal-title');
+        this.modalStamp = document.getElementById('modal-stamp');
+        this.modalBody = document.getElementById('modal-body');
+        this.btnNext = document.getElementById('btn-next');
+
+        this.summaryModal = document.getElementById('summary-modal');
+        this.summaryScore = document.getElementById('summary-score');
+        this.summaryRank = document.getElementById('summary-rank');
+        this.summaryList = document.getElementById('summary-list');
+      }
+
+      initEvents() {
+        this.btnRestart.addEventListener('click', () => location.reload());
+        this.btnNext.addEventListener('click', () => this.nextTrap());
+      }
+
+      loadTrap(index) {
+        this.userHypothesis = null;
+        this.isExperimentRun = false;
+        const trap = TRAP_SCENARIOS[index];
+
+        this.progressIndicator.textContent = `${index + 1} / ${TRAP_SCENARIOS.length}`;
+        this.scoreIndicator.textContent = this.score;
+
+        this.trapCategory.textContent = trap.category;
+        this.trapTitle.textContent = trap.title;
+        this.trapTag.textContent = `Пастка #${trap.id}/${TRAP_SCENARIOS.length}`;
+        this.trapDescription.innerHTML = trap.description;
+
+        // Reset visual state
+        this.beakerLiquid.className = `w-full h-1/2 ${trap.initialLiquidColor} transition-all duration-1000 relative flex items-center justify-center`;
+        this.liquidLabel.textContent = "? (Приховано)";
+        this.systemStatusTitle.textContent = "Очікує висунення вердикту";
+        this.systemStatusDesc.textContent = "Спочатку оберіть варіант відповіді (гіпотезу) нижче!";
+        
+        this.scaleIcon.className = "text-amber-500 text-4xl mb-2 transition-transform duration-700";
+        this.ionRatioText.textContent = "[Йонний баланс приховано]";
+
+        // Reset Run Experiment Button
+        this.btnRunSim.disabled = true;
+        this.btnRunSim.className = "mt-3 px-5 py-2.5 bg-stone-800 text-stone-500 font-bold font-detective text-xs rounded-xl transition-all flex items-center gap-2 cursor-not-allowed";
+
+        // Render Answer Options
+        this.renderOptions(trap);
+      }
+
+      renderOptions(trap) {
+        this.optionsContainer.innerHTML = '';
+        trap.options.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = "option-card p-4 bg-stone-950/80 hover:bg-stone-800 border-2 border-stone-800 hover:border-amber-600 rounded-xl text-left text-xs font-medium text-stone-200 transition-all flex items-start gap-3 shadow-md";
+          btn.innerHTML = `
+            <span class="w-6 h-6 rounded-full bg-amber-900/60 border border-amber-600/80 flex items-center justify-center font-bold text-amber-300 shrink-0 font-detective">${idx + 1}</span>
+            <div class="leading-relaxed">${opt.text}</div>
+          `;
+          btn.addEventListener('click', () => this.selectHypothesis(opt, btn));
+          this.optionsContainer.appendChild(btn);
+        });
+      }
+
+      selectHypothesis(opt, btnEl) {
+        if (this.isExperimentRun) return;
+
+        this.userHypothesis = opt;
+
+        // Highlight selected option
+        const allBtns = this.optionsContainer.querySelectorAll('button');
+        allBtns.forEach(b => {
+          b.className = "option-card p-4 bg-stone-950/80 border-2 border-stone-800 rounded-xl text-left text-xs font-medium text-stone-400 transition-all flex items-start gap-3 opacity-60";
+        });
+
+        btnEl.className = "option-card p-4 bg-amber-950/60 border-2 border-amber-500 rounded-xl text-left text-xs font-bold text-amber-100 transition-all flex items-start gap-3 ring-2 ring-amber-500/50 shadow-lg opacity-100 scale-[1.02]";
+
+        // Enable Experiment button
+        this.btnRunSim.disabled = false;
+        this.btnRunSim.className = "mt-3 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-black font-extrabold font-detective text-xs rounded-xl transition-all flex items-center gap-2 shadow-lg cursor-pointer animate-pulse";
+        this.systemStatusTitle.textContent = "Гіпотезу обрано!";
+        this.systemStatusDesc.textContent = "Натисніть «Перевірити дослід в стакані», щоб провести випробування.";
+      }
+
+      runExperimentVisual() {
+        if (!this.userHypothesis || this.isExperimentRun) return;
+        this.isExperimentRun = true;
+
+        const trap = TRAP_SCENARIOS[this.currentIndex];
+        
+        // Disable controls during animation
+        this.btnRunSim.disabled = true;
+        this.btnRunSim.className = "mt-3 px-5 py-2.5 bg-stone-800 text-stone-500 font-bold font-detective text-xs rounded-xl transition-all flex items-center gap-2 cursor-not-allowed";
+
+        // Animate beaker liquid & scale
+        this.beakerLiquid.className = `w-full h-3/4 ${trap.simLiquidColor} transition-all duration-1000 relative flex items-center justify-center anim-fill`;
+        this.liquidLabel.textContent = trap.simPH;
+
+        this.systemStatusTitle.textContent = "Експеримент виконано!";
+        this.systemStatusDesc.textContent = trap.simStatus;
+
+        if (trap.id === 1 || trap.id === 5) {
+          this.scaleIcon.classList.add('anim-scale-right');
+        } else if (trap.id === 2) {
+          this.scaleIcon.classList.add('anim-scale-left');
+        }
+        this.ionRatioText.textContent = trap.simIonRatio;
+
+        const isCorrect = this.userHypothesis.isCorrect;
+        if (isCorrect) {
+          this.score += 1;
+          this.scoreIndicator.textContent = this.score;
+        }
+
+        this.userHistory.push({
+          trap: trap,
+          userHypothesis: this.userHypothesis,
+          isCorrect: isCorrect
+        });
+
+        setTimeout(() => {
+          this.showVerdictModal(isCorrect, trap);
+        }, 1400);
+      }
+
+      showVerdictModal(isCorrect, trap) {
+        this.modalTitle.textContent = isCorrect ? "ВЕРДИКТ ПІДТВЕРДЖЕНО!" : "ПОМИЛКОВА ГІПОТЕЗА";
+        this.modalBody.innerHTML = trap.explanation;
+
+        if (isCorrect) {
+          this.modalStamp.textContent = "УСПІХ";
+          this.modalStamp.className = "font-stamp text-lg px-3 py-1 border-2 rounded tracking-wider uppercase border-emerald-500 text-emerald-400 bg-emerald-950/80";
+        } else {
+          this.modalStamp.textContent = "ХИБНИЙ ВИСНОВОК";
+          this.modalStamp.className = "font-stamp text-lg px-3 py-1 border-2 rounded tracking-wider uppercase border-red-500 text-red-400 bg-red-950/80";
+        }
+
+        this.verdictModal.classList.remove('hidden');
+      }
+
+      nextTrap() {
+        this.verdictModal.classList.add('hidden');
+        this.currentIndex += 1;
+
+        if (this.currentIndex < TRAP_SCENARIOS.length) {
+          this.loadTrap(this.currentIndex);
+        } else {
+          this.showSummaryReport();
+        }
+      }
+
+      showSummaryReport() {
+        this.summaryScore.textContent = `${this.score} / ${TRAP_SCENARIOS.length}`;
+
+        const rankEl = this.summaryRank;
+        if (this.score === 5) {
+          rankEl.textContent = "МАЙСТЕР ХІМІЧНОЇ ЛОГІКИ";
+          rankEl.className = "text-xl font-bold font-detective text-emerald-400 mt-1";
+        } else if (this.score >= 3) {
+          rankEl.textContent = "ДЕТЕКТИВ-АНАЛІТИК";
+          rankEl.className = "text-xl font-bold font-detective text-amber-400 mt-1";
+        } else {
+          rankEl.textContent = "СТАЖЕР-СЛІДЧИЙ";
+          rankEl.className = "text-xl font-bold font-detective text-red-400 mt-1";
+        }
+
+        this.summaryList.innerHTML = '';
+        this.userHistory.forEach((item, i) => {
+          const row = document.createElement('div');
+          row.className = `p-3 rounded-lg border text-xs flex justify-between items-center ${
+            item.isCorrect ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-200' : 'bg-red-950/40 border-red-800/60 text-red-200'
+          }`;
+          row.innerHTML = `
+            <div class="flex items-center gap-2">
+              <i class="fa-solid ${item.isCorrect ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-red-400'}"></i>
+              <span class="font-bold">${i + 1}. ${item.trap.title}</span>
+            </div>
+            <span class="font-mono text-[11px] opacity-80">${item.isCorrect ? '+1 бал' : '0 балів'}</span>
+          `;
+          this.summaryList.appendChild(row);
+        });
+
+        this.summaryModal.classList.remove('hidden');
+      }
+    }
+
+    let app;
+    window.onload = function() {
+      app = new EquilibriumTrapsApp();
+    };
+  </script>
+</body>
+</html>
